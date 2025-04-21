@@ -17,10 +17,11 @@ namespace analyser.console.cli
             var query = new EventLogQuery("System", PathType.LogName, "*[System/Level=2]");
             using var reader = new EventLogReader(query);
             EventRecord evt;
-            while ((evt = reader.ReadEvent()) != null) {
-                if (eventIds.Contains(evt.Id)) 
-                { 
-                    continue; 
+            while ((evt = reader.ReadEvent()) != null)
+            {
+                if (eventIds.Contains(evt.Id))
+                {
+                    continue;
                 }
                 eventIds.Add(evt.Id);
                 EventAnalyseQueue.Instance.AddEventQuery(new EventQuery(evt.Id, evt.FormatDescription()));
@@ -60,17 +61,37 @@ namespace analyser.console.cli
 
             var json = sb.ToString();
 
-            var userPrompt = "You are a system administrator. You have to analyse the following events and give a summary of the events. The events are in JSON format. Please give me a summary of the events.";
+            var userPrompt = "You are a system administrator. You have to analyse the following events and give a summary of the events. The events are in JSON format. Please give me a summary of the events. And suggest possible fixes.";
             // append json to userPrompt
             userPrompt += json;
 
 
 
-            var aiEngine = new AIEngine("http://localhost:11434/", "gemma3:1b");
+            var aiEngine = new OllamaAIEngine("http://localhost:11434/", "gemma3:1b");
 
             var response = await aiEngine.QueryAsync(userPrompt, CancellationToken.None);
 
-            Console.WriteLine(response[1].Text);
+            foreach (var item in response)
+            {
+                if (item.Role == ChatRole.Assistant)
+                {
+                    Console.WriteLine(item.Text);
+                }
+            }
+
+            while (true)
+            {
+                // Get user prompt and add to chat history
+                Console.WriteLine("Your prompt:");
+                response = await aiEngine.ChatAsync(Console.ReadLine(), CancellationToken.None);
+                foreach (var item in response)
+                {
+                    if (item.Role == ChatRole.Assistant)
+                    {
+                        Console.WriteLine(item.Text);
+                    }
+                }
+            }
         }
     }
 }

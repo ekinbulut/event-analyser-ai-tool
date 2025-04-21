@@ -24,11 +24,21 @@ namespace analyser.console.cli
             _chatHistory.Add(new ChatMessage(ChatRole.User, text));
             var response = "";
 
-            await foreach (var item in _chatClient.GetStreamingResponseAsync(_chatHistory))
+            await foreach (var item in _chatClient.GetStreamingResponseAsync(_chatHistory, null, token))
             {
                 //Console.Write(item.Text);
                 response += item.Text;
             }
+            _chatHistory.Add(new ChatMessage(ChatRole.Assistant, response));
+            return _chatHistory;
+        }
+
+        public async Task<List<ChatMessage>> ChatAsync(string text, CancellationToken token)
+        {
+            var response = "";
+            _chatHistory.Add(new ChatMessage(ChatRole.User, text));
+            var chatResponse = await _chatClient.GetResponseAsync(_chatHistory, null,  token);
+            response += chatResponse.Text;
             _chatHistory.Add(new ChatMessage(ChatRole.Assistant, response));
             return _chatHistory;
         }
