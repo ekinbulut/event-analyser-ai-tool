@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Concurrent;
+using analyser.console.cli.models;
 
-namespace analyser.console.cli
+namespace analyser.console.cli.infrastructure.memoryStore
 {
     internal sealed class EventAnalyseQueue
     {
